@@ -29,7 +29,6 @@
 36-M1_AMairena
 37-M1_AntonioAgujetas
 38-M1_AntonioMairena
-39-M1_Chaqueta
 40-M1_CurroMairena
 41-M1_DiegoClavel
 42-M1_DiegoRubichi
@@ -51,8 +50,6 @@
 59-M1_Pedrosanz
 61-M1_TioMollino
 63-M2_AMairena
-64-M2_Barullo
-65-M2_Chocolate
 66-M2_DAgujetas
 67-M2_EMorente
 68-M2_ElChaqueta
@@ -64,9 +61,7 @@
 74-M2_MPoveda
 75-M2_ManolilloelHerrao
 76-M2_MariaSolea
-77-M2_Matrona
 78-M2_NiniodeBarbate
 79-M2_PSanz
-80-M2_Rancapinos
 81-M2_SDonday
 82-M2_TiaAnicalaPiriniaca
