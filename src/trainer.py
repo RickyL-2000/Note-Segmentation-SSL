@@ -95,6 +95,7 @@ class Trainer:
         self.train_epoch = 0
 
         # --- Graceful Ctrl + C ---
+        avg_train_loss = 0
         try:
             while self.train_step < solver.hparams.max_steps and self.train_epoch < solver.hparams.max_epoch:
                 
@@ -106,7 +107,7 @@ class Trainer:
                 # --- Train Loop ---
                 solver.feature_extractor.train()
                 self.song_number = len(solver.supervised_datalist)
-                avg_train_loss = 0
+                # avg_train_loss = 0
                 for train_update in self.profiler.profile_iterable(range(self.song_number*solver.hparams.se), 'Train Loop (per song)'):
                     avg_train_loss += self.per_song_train_loop(solver, optimizer, scheduler, train_update, amp)
                 avg_train_loss /= self.song_number*solver.hparams.se
@@ -168,10 +169,23 @@ class Trainer:
 
         except KeyboardInterrupt:
             self.profiler.describe()
-            if self.best_epoch is None:
-                print(f'No model saved.')
-            else:
-                print(f'Best model: {self.best_epoch}.pt')
+            # if self.best_epoch is None:
+            #     print(f'No model saved.')
+            # else:
+            #     print(f'Best model: {self.best_epoch}.pt')
+            # 强制保存
+            with self.profiler.profile('Save Model'):
+                print('Renewing best model ...')
+                min_loss = avg_train_loss / self.train_step
+                solver.best_epoch = self.train_epoch
+                check_point = {
+                    'model': solver.feature_extractor.state_dict(),
+                    'amp': amp.state_dict(),
+                    'hparams': solver.hparams,
+                    'best_epoch': self.train_epoch,
+                    'best_loss': avg_train_loss
+                }
+                torch.save(check_point, os.path.join(self.hparams.save_path, f'epoch={self.train_epoch}.pt'))
             print('Exiting from training early.')
 
         # --- Profiler Summarization ---
