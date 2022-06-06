@@ -2,12 +2,12 @@
 # === Solver ===
 model_type="PyramidNet_ShakeDrop"
 loss_type="VAT" #[None, VAT, VATo]
-dataset1="TONAS" #Train Dataset, ["TONAS", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "CMedia", "CMedia_demucs"]
+dataset1="lasinger_train" #Train Dataset, ["TONAS", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "CMedia", "CMedia_demucs", "lasinger_train"]
 dataset2="MIR_1K" #Semi-Supervised Dataset, ["MIR_1K", "MIR_1K_Polyphonic", "Pop_Rhythm", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "DALI_demucs_train_segment", "MedleyDB", "MedleyDB_segment", "CMedia", "CMedia_demucs"]
 dataset3="None" #Instrumental Dataset, [Pop_Rhythm_Instrumental, MIR_1K_Instrumental]
 dataset4="None" #Validation Dataset, ["DALI_valid", "DALI_orig_valid", "DALI_demucs_valid"]
-dataset5="ISMIR2014" #Test Dataset, ["DALI_test", "DALI_orig_test", "DALI_demucs_test", "ISMIR2014", "CMedia", "CMedia_demucs"]
-mix_ratio=0.5
+dataset5="lasinger_test" #Test Dataset, ["DALI_test", "DALI_orig_test", "DALI_demucs_test", "ISMIR2014", "CMedia", "CMedia_demucs", "lasinger_test"]
+mix_ratio=0.0
 meta_path="/home1/liruiqi/Note-Segmentation-SSL/meta/"
 data_path="/home1/liruiqi/Note-Segmentation-SSL/data/"
 lr=0.0001
@@ -18,13 +18,13 @@ se=2
 num_feat=9
 k=9
 batch_size=64
-num_workers=1
+num_workers=4
 
 # === Trainer ===
-exp_name="Training_1"
+exp_name="Training_7"
 log_path="./log/"
 save_path="./checkpoints/"
-project="note_segmentation_default"
+project="note_segmentation_lasinger"
 entity="ruiqili"
 checkpoint_name="epoch=1.pt"
 amp_level="O1"

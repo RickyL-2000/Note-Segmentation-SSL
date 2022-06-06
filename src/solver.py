@@ -85,14 +85,16 @@ class OnOffsetSolver:
             "ISMIR2014": "ismir_2014.txt",
             "MedleyDB": "medleydb.txt",
             "MedleyDB_segment": "medleydb_segment.txt",
+            "lasinger_train": "lasinger_train_mini.txt",
+            "lasinger_test": "lasinger_test_mini.txt"
         }
 
         # --- Available Datasets ---
-        self.available_train_dataset = ["TONAS", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "CMedia", "CMedia_demucs"]
+        self.available_train_dataset = ["TONAS", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "CMedia", "CMedia_demucs", "lasinger_train"]
         self.available_semi_dataset = ["MIR_1K", "MIR_1K_Polyphonic", "Pop_Rhythm", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "DALI_demucs_train_segment", "MedleyDB", "MedleyDB_segment", "CMedia", "CMedia_demucs"]
         self.available_inst_dataset = ["Pop_Rhythm_Instrumental", "MIR_1K_Instrumental"]
         self.available_valid_dataset = ["DALI_valid", "DALI_orig_valid", "DALI_demucs_valid"]
-        self.available_test_dataset = ["DALI_test", "DALI_orig_test", "DALI_demucs_test", "ISMIR2014", "CMedia", "CMedia_demucs"]
+        self.available_test_dataset = ["DALI_test", "DALI_orig_test", "DALI_demucs_test", "ISMIR2014", "CMedia", "CMedia_demucs", "lasinger_test"]
 
         # --- Meta Data Loader ---
         self.dataset1 = self.hparams.dataset1.split("|") # Supervised
