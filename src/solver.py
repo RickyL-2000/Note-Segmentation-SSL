@@ -85,16 +85,18 @@ class OnOffsetSolver:
             "ISMIR2014": "ismir_2014.txt",
             "MedleyDB": "medleydb.txt",
             "MedleyDB_segment": "medleydb_segment.txt",
-            "lasinger_train": "lasinger_train_mini.txt",
-            "lasinger_test": "lasinger_test_mini.txt"
+            "lasinger_train": "lasinger_train.txt",
+            "lasinger_test": "lasinger_test.txt",
+            "tonas_train": "tonas_train.txt",
+            "tonas_test": "tonas_test.txt"
         }
 
         # --- Available Datasets ---
-        self.available_train_dataset = ["TONAS", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "CMedia", "CMedia_demucs", "lasinger_train"]
+        self.available_train_dataset = ["TONAS", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "CMedia", "CMedia_demucs", "lasinger_train", "tonas_train"]
         self.available_semi_dataset = ["MIR_1K", "MIR_1K_Polyphonic", "Pop_Rhythm", "DALI_train", "DALI_orig_train", "DALI_demucs_train", "DALI_demucs_train_segment", "MedleyDB", "MedleyDB_segment", "CMedia", "CMedia_demucs"]
         self.available_inst_dataset = ["Pop_Rhythm_Instrumental", "MIR_1K_Instrumental"]
         self.available_valid_dataset = ["DALI_valid", "DALI_orig_valid", "DALI_demucs_valid"]
-        self.available_test_dataset = ["DALI_test", "DALI_orig_test", "DALI_demucs_test", "ISMIR2014", "CMedia", "CMedia_demucs", "lasinger_test"]
+        self.available_test_dataset = ["DALI_test", "DALI_orig_test", "DALI_demucs_test", "ISMIR2014", "CMedia", "CMedia_demucs", "lasinger_test", "tonas_test", "TONAS"]
 
         # --- Meta Data Loader ---
         self.dataset1 = self.hparams.dataset1.split("|") # Supervised
@@ -464,21 +466,27 @@ class OnOffsetSolver:
     def test_dataloader(self):
         return self.__dataloader(mode='test')
     
-    def load_from_checkpoint(self, checkpoint_path, use_gpu=True):
+    def load_from_checkpoint(self, checkpoint_path, use_gpu=True, device=-1):
 
         # --- Device ---
         if use_gpu:
-            os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
-            memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
-            for idx, memory in enumerate(memory_available):
-                print(f'cuda:{idx} available memory: {memory}')
-            self.device = torch.device(f'cuda:{np.argmax(memory_available)}')
-            print(f'Selected cuda:{np.argmax(memory_available)} as device')
-            torch.cuda.set_device(int(np.argmax(memory_available)))
+            if device == -1:
+                os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
+                memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+                for idx, memory in enumerate(memory_available):
+                    print(f'cuda:{idx} available memory: {memory}')
+                self.device = torch.device(f'cuda:{np.argmax(memory_available)}')
+                print(f'Selected cuda:{np.argmax(memory_available)} as device')
+                torch.cuda.set_device(int(np.argmax(memory_available)))
+            else:
+                self.device = torch.device(f'cuda:{device}')
+                print(f'Selected cuda:{device} as device')
+                torch.cuda.set_device(int(device))
         else:
             self.device = torch.device('cpu')
 
         checkpoint = torch.load(checkpoint_path)
+        print(f"Successfully loaded checkpoint {checkpoint_path}")
         #self.hparams = argparse.Namespace(**{**checkpoint['hparams'], **self.hparams.__dict__})
         self.feature_extractor = self.feature_extractor.to(self.device)
         self.feature_extractor = amp.initialize(

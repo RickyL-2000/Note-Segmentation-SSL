@@ -26,7 +26,7 @@ def test(hparams):
     trainer = Trainer(hparams)
     solver = OnOffsetSolver(hparams)
 
-    solver.load_from_checkpoint(os.path.join(hparams.save_path, hparams.checkpoint_name), use_gpu=hparams.use_gpu)
+    solver.load_from_checkpoint(os.path.join(hparams.save_path, hparams.checkpoint_name), use_gpu=hparams.use_gpu, device=hparams.device)
     
     trainer.test(solver)
     
@@ -74,6 +74,7 @@ if __name__ == '__main__':
     parser.add_argument('--accumulate_grad_batches', help='Gradient accumulation', default=1, type=int)
     parser.add_argument('--skip_val', help='Skip validation loop, use train loss for best model', action='store_true')
     parser.add_argument('--use_gpu', help='Use gpu for training', action='store_true')
+    parser.add_argument('--device', help='device', default=-1, type=int)
     parser.add_argument('--test_no_offset', help='Test without offset_ratio, recommended for offset-unstable datasets (like DALI)', action='store_true')
     parser.add_argument('--train', help='Run in train mode', action='store_true')
     parser.add_argument('--test', help='Run in test mode', action='store_true')

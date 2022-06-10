@@ -11,6 +11,7 @@ import wandb
 import torch
 import random
 import os
+import time
 import numpy as np
 import apex.amp as amp
 import matplotlib.pyplot as plt
@@ -68,13 +69,18 @@ class Trainer:
         
         # --- Device ---
         if self.hparams.use_gpu:
-            os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
-            memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
-            for idx, memory in enumerate(memory_available):
-                print(f'cuda:{idx} available memory: {memory}')
-            self.device = torch.device(f'cuda:{np.argmax(memory_available)}')
-            print(f'Selected cuda:{np.argmax(memory_available)} as device')
-            torch.cuda.set_device(int(np.argmax(memory_available)))
+            if self.hparams.device == -1:
+                os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
+                memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+                for idx, memory in enumerate(memory_available):
+                    print(f'cuda:{idx} available memory: {memory}')
+                self.device = torch.device(f'cuda:{np.argmax(memory_available)}')
+                print(f'Selected cuda:{np.argmax(memory_available)} as device')
+                torch.cuda.set_device(int(np.argmax(memory_available)))
+            else:
+                self.device = torch.device(f'cuda:{self.hparams.device}')
+                print(f'Selected cuda:{self.hparams.device} as device')
+                torch.cuda.set_device(int(self.hparams.device))
         else:
             self.device = torch.device('cpu')
         solver.device = self.device
@@ -99,7 +105,7 @@ class Trainer:
         try:
             while self.train_step < solver.hparams.max_steps and self.train_epoch < solver.hparams.max_epoch:
                 
-                print(f"Epoch: {self.train_epoch:2d}")
+                print(f"Epoch: {self.train_epoch:2d} Time: {time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime())}")
                 
                 # --- Init Song List (Shuffle) ---
                 solver.initsonglist()
@@ -196,7 +202,7 @@ class Trainer:
         # --- Init ---
         solver.initsonglist()
         if self.best_epoch is not None:
-            solver.load_from_checkpoint(os.path.join(self.hparams.save_path, f'epoch={self.best_epoch}.pt'), use_gpu=self.hparams.use_gpu)
+            solver.load_from_checkpoint(os.path.join(self.hparams.save_path, f'epoch={self.best_epoch}.pt'), use_gpu=self.hparams.use_gpu, device=self.hparams.device)
         else:
             self.logger.watch(solver.feature_extractor)
         self.device = solver.device
@@ -233,10 +239,12 @@ class Trainer:
         solver.feature_extractor.eval()
         self.song_number = len(solver.test_datalist)
         for test_update in self.profiler.profile_iterable(range(self.song_number), 'Test Loop (per song)'):
-            test_outputs = self.per_song_test_loop(solver, test_update)
-            for test_key in log_dict.keys():
-                log_dict[test_key].append(test_outputs.log[test_key])
-        
+            try:    # Smooth_sdt6_modified() may return None to gen fault
+                test_outputs = self.per_song_test_loop(solver, test_update)
+                for test_key in log_dict.keys():
+                    log_dict[test_key].append(test_outputs.log[test_key])
+            except:
+                continue
 
         for test_key in log_dict.keys():
             log_dict[test_key] = np.mean(log_dict[test_key])
@@ -250,6 +258,7 @@ class Trainer:
             train_dataloader = solver.train_dataloader()
         tqdm_iterator = tqdm(total=len(train_dataloader), position=0, leave=True)
         train_loss = []
+        # 分帧？
         for batch_idx, batch in self.profiler.profile_iterable(enumerate(train_dataloader), 'Train Loop (per segment)'):
 
             # --- To Device ---
@@ -279,6 +288,8 @@ class Trainer:
             
             # --- Progress Bar ---
             tqdm_iterator.set_description_str(
+                f"{self.hparams.exp_name}|"
+                f"Epoch:{self.train_epoch}|Step:{self.train_step}| "
                 f"Song {update//solver.hparams.se:3d}/{self.song_number:3d} "
                 f"SE {update%solver.hparams.se:1d}"
                 )
@@ -336,7 +347,7 @@ class Trainer:
         with self.profiler.profile('Get Test DataLoader'):
             test_dataloader = solver.test_dataloader()
         tqdm_iterator = tqdm(
-            desc=f"Song {update:3d}/{self.song_number:3d}",
+            desc=f"{self.hparams.exp_name}|Song {update:3d}/{self.song_number:3d}",
             total=len(test_dataloader),
             position=0,
             leave=True
