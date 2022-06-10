@@ -13,6 +13,7 @@ np.random.seed(42)
 testset_ratio = 0.2
 small_dataset_ratio = 0.3
 mini_dataset_ratio = 0.05
+tiny_dataset_ratio = 0.01
 
 hop_length = 320
 sr = 16000
@@ -78,20 +79,62 @@ def gen_small_meta_file():
         for i, test_path in enumerate(small_test_paths):
             f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(small_test_paths) - 1 else ""))
 
+mini_train_paths = []
+mini_test_paths = []
 def gen_mini_meta_file():
-    global train_paths, test_paths
+    global train_paths, test_paths, mini_train_paths, mini_test_paths
     mini_train_paths = np.random.choice(train_paths, int(len(train_paths) * mini_dataset_ratio), replace=False)
     mini_test_paths = np.random.choice(test_paths, int(len(test_paths) * mini_dataset_ratio), replace=False)
-    with open(f"./meta/lasinger_train_mini.txt", "w", encoding="utf-8") as f:
-        for i, train_path in enumerate(mini_train_paths):
-            f.write(os.path.basename(train_path)[:-4] + ("\n" if i != len(mini_train_paths) - 1 else ""))
-    with open(f"./meta/lasinger_test_mini.txt", "w", encoding="utf-8") as f:
+    # with open(f"./meta/lasinger_train_mini.txt", "w", encoding="utf-8") as f:
+    #     for i, train_path in enumerate(mini_train_paths):
+    #         f.write(os.path.basename(train_path)[:-4] + ("\n" if i != len(mini_train_paths) - 1 else ""))
+    # with open(f"./meta/lasinger_test_mini.txt", "w", encoding="utf-8") as f:
+    #     for i, test_path in enumerate(mini_test_paths):
+    #         f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(mini_test_paths) - 1 else ""))
+
+def gen_tiny_meta_file():
+    global train_paths, test_paths
+    tiny_train_paths = np.random.choice(train_paths, int(len(train_paths) * tiny_dataset_ratio), replace=False)
+    tiny_test_paths = np.random.choice(test_paths, int(len(test_paths) * tiny_dataset_ratio), replace=False)
+    with open(f"./meta/lasinger_train_tiny.txt", "w", encoding="utf-8") as f:
+        for i, train_path in enumerate(tiny_train_paths):
+            f.write(os.path.basename(train_path)[:-4] + ("\n" if i != len(tiny_train_paths) - 1 else ""))
+    with open(f"./meta/lasinger_test_tiny.txt", "w", encoding="utf-8") as f:
+        for i, test_path in enumerate(tiny_test_paths):
+            f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(tiny_test_paths) - 1 else ""))
+
+def gen_voice_type_meta_file():
+    # from mini set
+    global train_paths, test_paths, mini_test_paths
+    """
+    type 0: 男低音
+    type 1: 声乐男+普男
+    type 2: 声乐女+普女
+    type 3: 女高音
+    """
+    with open(f"./meta/lasinger_test_type0.txt", "w", encoding="utf-8") as f:
         for i, test_path in enumerate(mini_test_paths):
-            f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(mini_test_paths) - 1 else ""))
+            if "男低音" in test_path:
+                f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(mini_test_paths) - 1 else ""))
+    with open(f"./meta/lasinger_test_type1.txt", "w", encoding="utf-8") as f:
+        for i, test_path in enumerate(mini_test_paths):
+            if "声乐男声" in test_path or "普通男声" in test_path:
+                f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(mini_test_paths) - 1 else ""))
+    with open(f"./meta/lasinger_test_type2.txt", "w", encoding="utf-8") as f:
+        for i, test_path in enumerate(mini_test_paths):
+            if ("声乐" in test_path and "女" in test_path) or "女_" in test_path:
+                f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(mini_test_paths) - 1 else ""))
+    with open(f"./meta/lasinger_test_type3.txt", "w", encoding="utf-8") as f:
+        for i, test_path in enumerate(mini_test_paths):
+            if "女高音" in test_path:
+                f.write(os.path.basename(test_path)[:-4] + ("\n" if i != len(mini_test_paths) - 1 else ""))
+
 
 # gen_meta_file()
 # gen_small_meta_file()
 gen_mini_meta_file()
+# gen_tiny_meta_file()
+gen_voice_type_meta_file()
 
 # %%
 def build_dataset():
